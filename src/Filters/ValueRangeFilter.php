@@ -39,7 +39,7 @@ class ValueRangeFilter extends Filter
                 Forms\Components\Fieldset::make($this->getlabel())
                     ->default(function () {
                         if ($this->isRangeOnly()) {
-                            return ['range_condition' => RangeFilterCond::Between->value];
+                            return [];
                         }
 
                         return ['range_condition' => $this->getDefaultCondition()?->value];
@@ -68,7 +68,7 @@ class ValueRangeFilter extends Filter
                             ->numeric()
                             ->placeholder(fn(): string => $this->getFormattedValue(0))
                             ->visible(fn(Get $get
-                            ): bool => $get('range_condition') === RangeFilterCond::Equal->value || empty($get('range_condition'))),
+                            ): bool => $get('range_condition') === !$this->isRangeOnly() && (RangeFilterCond::Equal->value || empty($get('range_condition')))),
                         Forms\Components\Grid::make([
                             'default' => 1,
                             'sm' => 2,
@@ -84,7 +84,7 @@ class ValueRangeFilter extends Filter
                                     ->placeholder(fn(): string => $this->getFormattedValue(0)),
                             ])
                             ->visible(fn(Get $get
-                            ): bool => $get('range_condition') === RangeFilterCond::Between->value),
+                            ): bool => $this->isRangeOnly() || $get('range_condition') === RangeFilterCond::Between->value),
                         Forms\Components\TextInput::make('range_greater_than')
                             ->hiddenLabel()
                             ->numeric()
@@ -100,32 +100,6 @@ class ValueRangeFilter extends Filter
                     ])
                     ->columns(1),
             ])
-            ->query(function (Builder $query, array $data): Builder {
-                return $query
-                    ->when(
-                        $data['range_equal'],
-                        fn(Builder $query, $value): Builder => $query->where($this->getName(), '=',
-                            $this->getValue($value)),
-                    )
-                    ->when(
-                        $data['range_between_from'] && $data['range_between_to'],
-                        function (Builder $query, $value) use ($data) {
-                            $query->where($this->getName(), '>=',
-                                $this->getValue($data['range_between_from']))->where($this->getName(), '<=',
-                                $this->getValue($data['range_between_to']));
-                        },
-                    )
-                    ->when(
-                        $data['range_greater_than'],
-                        fn(Builder $query, $value): Builder => $query->where($this->getName(), '>',
-                            $this->getValue($value)),
-                    )
-                    ->when(
-                        $data['range_less_than'],
-                        fn(Builder $query, $value): Builder => $query->where($this->getName(), '<',
-                            $this->getValue($value)),
-                    );
-            })
             ->indicateUsing(function (array $data): array {
                 $indicators = [];
 
@@ -151,6 +125,20 @@ class ValueRangeFilter extends Filter
                 }
 
                 return $indicators;
+            })
+            ->resetState(function () {
+                $filterFields = $this->getForm()?->getFlatFields() ?? [];
+                foreach ($filterFields as $filterField) {
+                    $filterField->state(null);
+                }
+
+                return [
+                    'range_equal' => null,
+                    'range_between_from' => null,
+                    'range_between_to' => null,
+                    'range_greater_than' => null,
+                    'range_less_than' => null,
+                ];
             });
     }
 
@@ -161,6 +149,42 @@ class ValueRangeFilter extends Filter
         }
 
         return $value;
+    }
+
+    public function apply(Builder $query, array $data = []): Builder
+    {
+        if ($this->hasQueryModificationCallback()) {
+            return parent::apply($query, $data);
+        }
+
+        return $query
+            ->when(
+                $data['range_equal'],
+                fn(Builder $query, $value): Builder => $query->where($this->getName(), '=',
+                    $this->getValue($value)),
+            )
+            ->when(
+                $data['range_between_from'],
+                function (Builder $query, $value) use ($data) {
+                    $query->where($this->getName(), '>=', $this->getValue($data['range_between_from']));
+                },
+            )
+            ->when(
+                $data['range_between_to'],
+                function (Builder $query, $value) use ($data) {
+                    $query->where($this->getName(), '<=', $this->getValue($data['range_between_to']));
+                },
+            )
+            ->when(
+                $data['range_greater_than'],
+                fn(Builder $query, $value): Builder => $query->where($this->getName(), '>',
+                    $this->getValue($value)),
+            )
+            ->when(
+                $data['range_less_than'],
+                fn(Builder $query, $value): Builder => $query->where($this->getName(), '<',
+                    $this->getValue($value)),
+            );
     }
 
     protected function getFormattedValue($value)
