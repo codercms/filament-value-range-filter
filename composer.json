@@ -1,5 +1,5 @@
 {
-    "name": "tapp/filament-value-range-filter",
+    "name": "codercms/filament-value-range-filter",
     "description": "Filament country code field.",
     "keywords": [
         "tapp network",
@@ -18,6 +18,10 @@
         {
             "name": "Tapp Network",
             "email": "andreia.bohner@tappnetwork.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Dmitry K.",
             "role": "Developer"
         }
     ],
