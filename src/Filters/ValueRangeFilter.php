@@ -36,7 +36,7 @@ class ValueRangeFilter extends Filter
         parent::setup();
 
         $this
-            ->form(fn() => [
+            ->schema(fn() => [
                 Schemas\Components\Fieldset::make($this->getlabel())
                     ->default(function () {
                         if ($this->isRangeOnly()) {
@@ -70,7 +70,7 @@ class ValueRangeFilter extends Filter
                             ->placeholder(fn(): string => $this->getFormattedValue(0))
                             ->visible(fn(Get $get
                             ): bool => $get('range_condition') === !$this->isRangeOnly() && (RangeFilterCond::Equal->value || empty($get('range_condition')))),
-                        Forms\Components\Grid::make([
+                        Schemas\Components\Grid::make([
                             'default' => 1,
                             'sm' => 2,
                         ])
