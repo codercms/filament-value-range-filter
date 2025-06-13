@@ -31,8 +31,8 @@
         "source": "https://github.com/TappNetwork/filament-value-range-filter"
     },
     "require": {
-        "php": "^8.1",
-        "filament/filament": "^3.0-stable"
+        "php": "^8.3",
+        "filament/filament": "^4.0.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
@@ -93,6 +93,6 @@
             }
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }

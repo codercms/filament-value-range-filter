@@ -12,5 +12,6 @@ yarn-error.log
 /coverage
 .DS_Store
 composer.phar
+composer.lock
 phpunit.xml
 phpstan.neon
