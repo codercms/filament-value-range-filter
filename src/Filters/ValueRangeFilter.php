@@ -128,7 +128,7 @@ class ValueRangeFilter extends Filter
                 return $indicators;
             })
             ->resetState(function () {
-                $filterFields = $this->getForm()?->getFlatFields() ?? [];
+                $filterFields = $this->getSchema()?->getFlatFields() ?? [];
                 foreach ($filterFields as $filterField) {
                     $filterField->state(null);
                 }
